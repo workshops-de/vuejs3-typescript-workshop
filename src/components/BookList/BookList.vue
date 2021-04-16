@@ -13,9 +13,8 @@
 import { defineComponent } from "vue";
 
 import BookListItem from "@/components/BookListItem/BookListItem.vue";
+import http from "@/utils/http";
 import { Book } from "./types";
-
-import BOOKS from "./books";
 
 interface ComponentData {
   books: Book[];
@@ -38,9 +37,13 @@ export default defineComponent({
         read: true,
       };
     },
+    async updateBooks() {
+      const books = await http<Book[]>("http://localhost:4730/books");
+      this.books = books;
+    },
   },
   created() {
-    this.books = [...BOOKS];
+    this.updateBooks();
   },
 });
 </script>
