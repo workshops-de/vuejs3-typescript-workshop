@@ -1,6 +1,11 @@
 <template>
   <table>
-    <BookListItem v-for="book in books" :key="book.isbn" v-bind="book" />
+    <BookListItem
+      v-for="(book, index) in books"
+      :key="book.isbn"
+      v-bind="book"
+      @read="readBook(index)"
+    />
   </table>
 </template>
 
@@ -25,6 +30,14 @@ export default defineComponent({
     return {
       books: [],
     };
+  },
+  methods: {
+    readBook(index: number) {
+      this.books[index] = {
+        ...this.books[index],
+        read: true,
+      };
+    },
   },
   created() {
     this.books = [...BOOKS];
