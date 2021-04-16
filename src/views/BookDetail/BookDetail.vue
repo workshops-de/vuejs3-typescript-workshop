@@ -40,6 +40,12 @@ export default defineComponent({
   beforeRouteUpdate(to: RouteLocationNormalized) {
     this.init(to.params.isbn as string);
   },
+  beforeRouteLeave(): boolean {
+    const answer = window.confirm(
+      "Do you really want to leave? you have unsaved changes!"
+    );
+    return answer;
+  },
 });
 </script>
 
