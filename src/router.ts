@@ -1,9 +1,12 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
-import BookList from "@/views/BookList/BookList.vue";
 import NotFound from "@/views/NotFound/NotFound.vue";
 import About from "@/views/About/About.vue";
-import BookDetail from "@/views/BookDetail/BookDetail.vue";
-import Books from "@/views/Books/Books.vue";
+const Books = () =>
+  import(/* webpackChunkName: "books" */ "@/views/Books/Books.vue");
+const BookDetail = () =>
+  import(/* webpackChunkName: "books" */ "@/views/BookDetail/BookDetail.vue");
+const BookList = () =>
+  import(/* webpackChunkName: "books" */ "@/views/BookList/BookList.vue");
 
 const routes: Array<RouteRecordRaw> = [
   {
