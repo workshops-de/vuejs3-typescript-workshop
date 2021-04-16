@@ -28,6 +28,19 @@ export default defineComponent({
       this.y = e.offsetY;
     },
   },
+  watch: {
+    x(val: number) {
+      if (val > 150) {
+        alert("X is greater than 150");
+      }
+    },
+    y(newValue: number, oldValue: number) {
+      if (oldValue > 300 && newValue < oldValue) {
+        alert("Y ftw!");
+        this.y = 0;
+      }
+    },
+  },
 });
 </script>
 
