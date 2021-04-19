@@ -18,6 +18,7 @@ import { defineComponent } from "vue";
 import BookListItem from "@/components/BookListItem/BookListItem.vue";
 import http from "@/utils/http";
 import { Book } from "./types";
+import { SET_BOOKS } from "@/store/index";
 
 interface ComponentData {
   search: string;
@@ -50,6 +51,10 @@ export default defineComponent({
     async updateBooks() {
       const books = await http<Book[]>("http://localhost:4730/books");
       this.books = books;
+
+      this.$store.dispatch(SET_BOOKS, {
+        books: this.books,
+      });
     },
   },
   created() {
