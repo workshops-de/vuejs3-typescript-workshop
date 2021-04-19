@@ -4,10 +4,10 @@
 
   <table>
     <BookListItem
-      v-for="(book, index) in filteredBooks"
+      v-for="book in filteredBooks"
       :key="book.isbn"
       v-bind="book"
-      @read="readBook(index)"
+      @read="readBook(book)"
     />
   </table>
 </template>
@@ -16,13 +16,11 @@
 import { defineComponent } from "vue";
 
 import BookListItem from "@/components/BookListItem/BookListItem.vue";
-import http from "@/utils/http";
 import { Book } from "./types";
-import { SET_BOOKS } from "@/store/index";
+import { GET_BOOKS, SET_BOOKS } from "@/store/index";
 
 interface ComponentData {
   search: string;
-  books: Book[];
 }
 
 export default defineComponent({
@@ -33,28 +31,34 @@ export default defineComponent({
   data(): ComponentData {
     return {
       search: "",
-      books: [],
     };
   },
   computed: {
+    books() {
+      return this.$store.state.books;
+    },
     filteredBooks(): Book[] {
       return this.books.filter((book) => book.title.includes(this.search));
     },
   },
   methods: {
-    readBook(index: number) {
-      this.books[index] = {
-        ...this.books[index],
-        read: true,
-      };
+    readBook(book: Book) {
+      this.$store.dispatch(SET_BOOKS, {
+        books: [
+          ...this.books.map((bookEntry) => {
+            if (bookEntry.isbn === book.isbn) {
+              return {
+                ...bookEntry,
+                read: true,
+              };
+            }
+            return bookEntry;
+          }),
+        ],
+      });
     },
     async updateBooks() {
-      const books = await http<Book[]>("http://localhost:4730/books");
-      this.books = books;
-
-      this.$store.dispatch(SET_BOOKS, {
-        books: this.books,
-      });
+      await this.$store.dispatch(GET_BOOKS);
     },
   },
   created() {
