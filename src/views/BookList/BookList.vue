@@ -14,10 +14,19 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { createNamespacedHelpers } from "vuex";
 
 import BookListItem from "@/components/BookListItem/BookListItem.vue";
 import { Book } from "./types";
-import { GET_BOOKS, SET_BOOKS } from "@/store/index";
+import { MapperWithNamespace } from "@/store/types";
+import {
+  BooksState,
+  GET_BOOKS,
+  namespace,
+  SET_BOOKS,
+} from "@/store/modules/books/types";
+
+const { mapState, mapActions } = createNamespacedHelpers(namespace);
 
 interface ComponentData {
   search: string;
@@ -34,16 +43,18 @@ export default defineComponent({
     };
   },
   computed: {
-    books() {
-      return this.$store.state.books;
-    },
+    ...(mapState as MapperWithNamespace)<BooksState>(["books"]),
     filteredBooks(): Book[] {
       return this.books.filter((book) => book.title.includes(this.search));
     },
   },
   methods: {
+    ...mapActions({
+      setBooks: SET_BOOKS,
+      getBooks: GET_BOOKS,
+    }),
     readBook(book: Book) {
-      this.$store.dispatch(SET_BOOKS, {
+      this.setBooks({
         books: [
           ...this.books.map((bookEntry) => {
             if (bookEntry.isbn === book.isbn) {
@@ -58,7 +69,7 @@ export default defineComponent({
       });
     },
     async updateBooks() {
-      await this.$store.dispatch(GET_BOOKS);
+      await this.getBooks();
     },
   },
   created() {
