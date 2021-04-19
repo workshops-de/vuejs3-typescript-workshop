@@ -1,4 +1,5 @@
 <template>
+  <p v-if="success">Successfully created new book.</p>
   <form novalidate @submit.prevent="submit">
     <p>
       <label for="title">Title</label>
@@ -38,6 +39,18 @@
       <span v-if="errors.author">{{ errors.author }}</span>
     </p>
     <p>
+      <label for="isbn">Isbn</label>
+      <input
+        type="text"
+        v-model="book.isbn"
+        name="isbn"
+        id="isbn"
+        @change="validateIsbn"
+        :class="{ 'is-invalid': errors.isbn }"
+      />
+      <span v-if="errors.isbn">{{ errors.isbn }}</span>
+    </p>
+    <p>
       <button type="submit" :disabled="isInvalid">Submit</button>
     </p>
   </form>
@@ -47,28 +60,34 @@
 import { defineComponent } from "vue";
 
 import { Book } from "@/views/BookList/types";
-import { get, put } from "@/utils/http";
+import { post } from "@/utils/http";
 import { required, minLength } from "@/utils/validations";
 
 interface ComponentData {
   book: Partial<Book>;
-  isbn: string | null;
   errors: {
     [P in keyof Partial<Book>]: string;
   };
+  success: boolean;
 }
 
 export default defineComponent({
-  name: "BookEdit",
+  name: "BookNew",
   data(): ComponentData {
     return {
-      book: {},
-      isbn: null,
+      book: {
+        title: "",
+        abstract: "",
+        author: "",
+        isbn: "",
+      },
       errors: {
         title: "",
         abstract: "",
         author: "",
+        isbn: "",
       },
+      success: false,
     };
   },
   computed: {
@@ -79,23 +98,23 @@ export default defineComponent({
     },
   },
   methods: {
-    async getBook() {
-      this.book = await get<Book>(`http://localhost:4730/books/${this.isbn}`);
-    },
-    init(isbn: string) {
-      this.isbn = isbn;
-      this.getBook();
-    },
     async submit() {
-      this.book = await put<Book>(
-        `http://localhost:4730/books/${this.isbn}`,
-        this.book,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      this.success = false;
+
+      await post<Book>(`http://localhost:4730/books`, this.book, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      this.book = {
+        title: "",
+        abstract: "",
+        author: "",
+        isbn: "",
+      };
+
+      this.success = true;
     },
     validateTitle() {
       if (!required(this.book?.title ?? "")) {
@@ -123,12 +142,15 @@ export default defineComponent({
         this.errors.author = "";
       }
     },
-  },
-  created() {
-    this.init(this.$route.params.isbn as string);
-  },
-  beforeRouteUpdate(to) {
-    this.init(to.params.isbn as string);
+    validateIsbn() {
+      if (!required(this.book?.isbn ?? "")) {
+        this.errors.isbn = "Isbn is required.";
+      } else if (!minLength(this.book?.isbn ?? "", 13)) {
+        this.errors.isbn = "The isbn must be at least 13 characters long.";
+      } else {
+        this.errors.isbn = "";
+      }
+    },
   },
 });
 </script>
